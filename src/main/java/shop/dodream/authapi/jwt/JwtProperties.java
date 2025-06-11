@@ -16,4 +16,5 @@ public class JwtProperties {
 
     private String headerString = "Authorization";
     private String tokenPrefix = "Bearer";
+
 }
