@@ -33,10 +33,10 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(request.getUserId(), request.getPassword())
         );
 
-        UserResponse member = userFeignClient.findByUserId(request.getUserId());
+        UserResponse user = userFeignClient.findByUserId(request.getUserId());
 
-        String accessToken = jwtTokenProvider.createAccessToken(member.getUserId(), member.getRole());
-        String refreshToken = jwtTokenProvider.createRefreshToken(member.getUserId());
+        String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), user.getRole());
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
 
         return ResponseEntity.ok(new TokenResponse(
                 accessToken,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),refreshToken));

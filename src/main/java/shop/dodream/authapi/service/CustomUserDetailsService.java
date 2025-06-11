@@ -18,14 +18,14 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserFeignClient userFeignClient;
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-        UserResponse member = userFeignClient.findByUserId(userId);
-        if (member == null) {
+        UserResponse user = userFeignClient.findByUserId(userId);
+        if (user == null) {
             throw new UsernameNotFoundException("No user found");
         }
         return new User(
-                member.getUserId(),
-                member.getPassword(),
-                List.of(new SimpleGrantedAuthority("ROLE_"+member.getRole().name()))
+                user.getUserId(),
+                user.getPassword(),
+                List.of(new SimpleGrantedAuthority("ROLE_"+user.getRole().name()))
         );
     }
 }
