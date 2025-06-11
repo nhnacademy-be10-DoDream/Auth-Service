@@ -5,9 +5,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import shop.dodream.authapi.dto.UserResponse;
 
-@FeignClient(name = "member-api")
+@FeignClient(name = "user-api")
 public interface UserFeignClient {
 
-    @GetMapping("/members/userId")
+    @GetMapping("/users/userId")
     UserResponse findByUserId(@RequestParam("userId")String userId);
 }
