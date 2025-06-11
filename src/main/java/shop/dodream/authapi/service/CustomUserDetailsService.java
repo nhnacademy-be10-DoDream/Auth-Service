@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import shop.dodream.authapi.client.UserFeignClient;
 import shop.dodream.authapi.dto.UserResponse;
-
 import java.util.List;
 
 @Service
