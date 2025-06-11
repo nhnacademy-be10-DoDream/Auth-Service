@@ -13,4 +13,8 @@ public class JwtProperties {
     private String secret;
     private long accessTokenExpiration;
     private long refreshTokenExpiration;
+
+    private String headerString = "Authorization";
+    private String tokenPrefix = "Bearer";
+
 }
