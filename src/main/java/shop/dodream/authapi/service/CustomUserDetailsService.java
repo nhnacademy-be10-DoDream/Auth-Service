@@ -17,13 +17,14 @@ import java.util.List;
 public class CustomUserDetailsService implements UserDetailsService {
     private final MemberFeignClient memberFeignClient;
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        MemberResponse member = memberFeignClient.findByUsername(username);
+    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
+        MemberResponse member = memberFeignClient.findByUserId(userId);
+
         if (member == null) {
             throw new UsernameNotFoundException("No user found");
         }
         return new User(
-                member.getUsername(),
+                member.getUserId(),
                 member.getPassword(),
                 List.of(new SimpleGrantedAuthority("ROLE_"+member.getRole().name()))
         );

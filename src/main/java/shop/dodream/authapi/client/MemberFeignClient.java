@@ -8,6 +8,7 @@ import shop.dodream.authapi.dto.MemberResponse;
 @FeignClient(name = "member-api")
 public interface MemberFeignClient {
 
-    @GetMapping("/members/username")
-    MemberResponse findByUsername(@RequestParam("username")String username);
+    @GetMapping("/members/userId")
+    MemberResponse findByUserId(@RequestParam("userId")String userId);
+
 }

@@ -51,7 +51,7 @@ public class AuthControllerTest {
         String encoded = new BCryptPasswordEncoder().encode(rawPassword);
         LoginRequest request = new LoginRequest("testuser", rawPassword);
 
-        given(memberFeignClient.findByUsername("testuser"))
+        given(memberFeignClient.findByUserId("testuser"))
                 .willReturn(new MemberResponse("testuser", encoded, Role.USER));
 
         given(jwtTokenProvider.createAccessToken(any(), any()))
@@ -72,17 +72,17 @@ public class AuthControllerTest {
 
     @Test
     void refreshSuccess() throws Exception {
-        String username = "testuser";
+        String userId = "testuser";
         String refreshToken = "valid.token";
 
         ValueOperations<String, String> ops = mock(ValueOperations.class);
         given(stringRedisTemplate.opsForValue()).willReturn(ops);
-        given(ops.get("refresh:" + username)).willReturn(refreshToken);
+        given(ops.get("refresh:" + userId)).willReturn(refreshToken);
 
         given(jwtTokenProvider.validateToken(refreshToken)).willReturn(true);
-        given(jwtTokenProvider.getUsernameFromToken(refreshToken)).willReturn(username);
-        given(memberFeignClient.findByUsername(username)).willReturn(new MemberResponse(username, "pw", Role.USER));
-        given(jwtTokenProvider.createAccessToken(eq(username), eq(Role.USER)))
+        given(jwtTokenProvider.getUserIdFromToken(refreshToken)).willReturn(userId);
+        given(memberFeignClient.findByUserId(userId)).willReturn(new MemberResponse(userId, "pw", Role.USER));
+        given(jwtTokenProvider.createAccessToken(eq(userId), eq(Role.USER)))
                 .willReturn("new.access.token");
 
         RefreshRequest request = new RefreshRequest(refreshToken);
@@ -112,14 +112,14 @@ public class AuthControllerTest {
     @Test
     void refreshFail_tokenMismatch() throws Exception {
         String refreshToken = "client.token";
-        String username = "testuser";
+        String userId = "testuser";
 
         ValueOperations<String, String> ops = mock(ValueOperations.class);
         given(stringRedisTemplate.opsForValue()).willReturn(ops);
-        given(ops.get("refresh:" + username)).willReturn("server.token");
+        given(ops.get("refresh:" + userId)).willReturn("server.token");
 
         given(jwtTokenProvider.validateToken(refreshToken)).willReturn(true);
-        given(jwtTokenProvider.getUsernameFromToken(refreshToken)).willReturn(username);
+        given(jwtTokenProvider.getUserIdFromToken(refreshToken)).willReturn(userId);
 
         RefreshRequest request = new RefreshRequest(refreshToken);
 

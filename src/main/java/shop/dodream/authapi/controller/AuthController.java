@@ -30,13 +30,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest request) {
         Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+
+                new UsernamePasswordAuthenticationToken(request.getUserId(), request.getPassword())
         );
 
-        MemberResponse member = memberFeignClient.findByUsername(request.getUsername());
+        MemberResponse member = memberFeignClient.findByUserId(request.getUserId());
 
-        String accessToken = jwtTokenProvider.createAccessToken(member.getUsername(), member.getRole());
-        String refreshToken = jwtTokenProvider.createRefreshToken(member.getUsername());
+        String accessToken = jwtTokenProvider.createAccessToken(member.getUserId(), member.getRole());
+        String refreshToken = jwtTokenProvider.createRefreshToken(member.getUserId());
+
 
         return ResponseEntity.ok(new TokenResponse(
                 accessToken,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),refreshToken));
@@ -47,14 +49,16 @@ public class AuthController {
         if(!jwtTokenProvider.validateToken(request.getRefreshToken())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        String username = jwtTokenProvider.getUsernameFromToken(request.getRefreshToken());
 
-        if(!refreshTokenRepository.isValid(username, request.getRefreshToken())) {
+        String userId = jwtTokenProvider.getUserIdFromToken(request.getRefreshToken());
+
+        if(!refreshTokenRepository.isValid(userId, request.getRefreshToken())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Role role = memberFeignClient.findByUsername(username).getRole();
-        String newAccessToken = jwtTokenProvider.createAccessToken(username, role);
+        Role role = memberFeignClient.findByUserId(userId).getRole();
+        String newAccessToken = jwtTokenProvider.createAccessToken(userId, role);
+
 
         return ResponseEntity.ok(new TokenResponse(
                 newAccessToken,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),null)

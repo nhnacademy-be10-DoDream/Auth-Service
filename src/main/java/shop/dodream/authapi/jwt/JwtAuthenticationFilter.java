@@ -22,8 +22,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtProperties jwtProperties;
 
-
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = resolveToken(request);
@@ -33,11 +31,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     throw new RuntimeException("Invalid JWT token");
                 }
 
-                String username = jwtTokenProvider.getUsernameFromToken(token);
+
+                String userId = jwtTokenProvider.getUserIdFromToken(token);
                 Role role = jwtTokenProvider.getRoleFromToken(token);
 
                 Authentication auth = new UsernamePasswordAuthenticationToken(
-                        username, null, List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
+                        userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
+
                 );
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
