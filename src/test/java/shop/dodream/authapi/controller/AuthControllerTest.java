@@ -11,7 +11,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
-import shop.dodream.authapi.client.MemberFeignClient;
+import shop.dodream.authapi.client.UserFeignClient;
 import shop.dodream.authapi.dto.*;
 import shop.dodream.authapi.jwt.JwtProperties;
 import shop.dodream.authapi.jwt.JwtTokenProvider;
@@ -36,7 +36,7 @@ public class AuthControllerTest {
     private JwtProperties jwtProperties;
 
     @MockBean
-    private MemberFeignClient memberFeignClient;
+    private UserFeignClient userFeignClient;
 
     @MockBean
     private JwtTokenProvider jwtTokenProvider;
@@ -51,8 +51,8 @@ public class AuthControllerTest {
         String encoded = new BCryptPasswordEncoder().encode(rawPassword);
         LoginRequest request = new LoginRequest("testuser", rawPassword);
 
-        given(memberFeignClient.findByUserId("testuser"))
-                .willReturn(new MemberResponse("testuser", encoded, Role.USER));
+        given(userFeignClient.findByUserId("testuser"))
+                .willReturn(new UserResponse("testuser", encoded, Role.USER));
 
         given(jwtTokenProvider.createAccessToken(any(), any()))
                 .willReturn("mocked.access.token");
@@ -81,7 +81,7 @@ public class AuthControllerTest {
 
         given(jwtTokenProvider.validateToken(refreshToken)).willReturn(true);
         given(jwtTokenProvider.getUserIdFromToken(refreshToken)).willReturn(userId);
-        given(memberFeignClient.findByUserId(userId)).willReturn(new MemberResponse(userId, "pw", Role.USER));
+        given(userFeignClient.findByUserId(userId)).willReturn(new UserResponse(userId, "pw", Role.USER));
         given(jwtTokenProvider.createAccessToken(eq(userId), eq(Role.USER)))
                 .willReturn("new.access.token");
 

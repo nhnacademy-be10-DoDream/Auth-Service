@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import shop.dodream.authapi.client.MemberFeignClient;
+import shop.dodream.authapi.client.UserFeignClient;
 import shop.dodream.authapi.dto.*;
 import shop.dodream.authapi.jwt.JwtProperties;
 import shop.dodream.authapi.jwt.JwtTokenProvider;
@@ -23,7 +23,7 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
-    private final MemberFeignClient memberFeignClient;
+    private final UserFeignClient userFeignClient;
     private final JwtProperties jwtProperties;
     private final RefreshTokenRepository refreshTokenRepository;
 
@@ -33,7 +33,7 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(request.getUserId(), request.getPassword())
         );
 
-        MemberResponse member = memberFeignClient.findByUserId(request.getUserId());
+        UserResponse member = userFeignClient.findByUserId(request.getUserId());
 
         String accessToken = jwtTokenProvider.createAccessToken(member.getUserId(), member.getRole());
         String refreshToken = jwtTokenProvider.createRefreshToken(member.getUserId());
@@ -53,7 +53,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Role role = memberFeignClient.findByUserId(userId).getRole();
+        Role role = userFeignClient.findByUserId(userId).getRole();
         String newAccessToken = jwtTokenProvider.createAccessToken(userId, role);
 
         return ResponseEntity.ok(new TokenResponse(
