@@ -34,10 +34,9 @@ public class AuthController {
         );
 
         UserResponse member = userFeignClient.findByUserId(request.getUserId());
-
         String accessToken = jwtTokenProvider.createAccessToken(member.getUserId(), member.getRole());
         String refreshToken = jwtTokenProvider.createRefreshToken(member.getUserId());
-
+      
         return ResponseEntity.ok(new TokenResponse(
                 accessToken,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),refreshToken));
     }
@@ -55,7 +54,6 @@ public class AuthController {
 
         Role role = userFeignClient.findByUserId(userId).getRole();
         String newAccessToken = jwtTokenProvider.createAccessToken(userId, role);
-
         return ResponseEntity.ok(new TokenResponse(
                 newAccessToken,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),null)
         );
