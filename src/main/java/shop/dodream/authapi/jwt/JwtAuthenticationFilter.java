@@ -20,6 +20,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtProperties jwtProperties;
 
 
     @Override
@@ -49,7 +50,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String resolveToken(HttpServletRequest request) {
-        String bearer = request.getHeader("Authorization");
-        return (bearer != null && bearer.startsWith("Bearer ")) ? bearer.substring(7) : null;
+        String bearer = request.getHeader(jwtProperties.getHeaderString());
+        String prefix = jwtProperties.getTokenPrefix() +" ";
+        return (bearer != null && bearer.startsWith(prefix)) ? bearer.substring(prefix.length()) : null;
     }
 }

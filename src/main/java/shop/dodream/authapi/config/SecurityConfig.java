@@ -12,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import shop.dodream.authapi.jwt.JwtAuthenticationEntryPoint;
 import shop.dodream.authapi.jwt.JwtAuthenticationFilter;
+import shop.dodream.authapi.jwt.JwtProperties;
 import shop.dodream.authapi.jwt.JwtTokenProvider;
 
 @Configuration
@@ -21,6 +22,7 @@ public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+    private final JwtProperties jwtProperties;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -36,7 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider,jwtProperties), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
