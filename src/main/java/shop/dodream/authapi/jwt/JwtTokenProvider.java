@@ -14,10 +14,10 @@ import java.util.Date;
 public class JwtTokenProvider {
     private final JwtProperties jwtProperties;
 
-    public String createAccessToken(String username, Role role){
+    public String createAccessToken(String userId, Role role){
         Date now = new Date();
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(userId)
                 .claim("role",role.name())
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + jwtProperties.getAccessTokenExpiration()))
@@ -25,10 +25,10 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String createRefreshToken(String username) {
+    public String createRefreshToken(String userId) {
         Date now = new Date();
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(userId)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + jwtProperties.getRefreshTokenExpiration()))
                 .signWith(SignatureAlgorithm.HS256, jwtProperties.getSecret().getBytes())
@@ -57,7 +57,7 @@ public class JwtTokenProvider {
         return Role.valueOf(role);
     }
 
-    public String getUsernameFromToken(String token) {
+    public String getUserIdFromToken(String token) {
         return Jwts.parser()
                 .setSigningKey(jwtProperties.getSecret().getBytes())
                 .parseClaimsJws(token)

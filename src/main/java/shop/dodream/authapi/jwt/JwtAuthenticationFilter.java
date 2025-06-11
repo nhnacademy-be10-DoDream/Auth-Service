@@ -32,11 +32,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     throw new RuntimeException("Invalid JWT token");
                 }
 
-                String username = jwtTokenProvider.getUsernameFromToken(token);
+                String userId = jwtTokenProvider.getUserIdFromToken(token);
                 Role role = jwtTokenProvider.getRoleFromToken(token);
 
                 Authentication auth = new UsernamePasswordAuthenticationToken(
-                        username, null, List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
+                        userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
                 );
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
