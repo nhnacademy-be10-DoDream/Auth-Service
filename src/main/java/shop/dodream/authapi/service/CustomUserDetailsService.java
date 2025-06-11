@@ -7,19 +7,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import shop.dodream.authapi.client.MemberFeignClient;
-import shop.dodream.authapi.dto.MemberResponse;
-
+import shop.dodream.authapi.client.UserFeignClient;
+import shop.dodream.authapi.dto.UserResponse;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
-    private final MemberFeignClient memberFeignClient;
+    private final UserFeignClient userFeignClient;
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-        MemberResponse member = memberFeignClient.findByUserId(userId);
-
+        UserResponse member = userFeignClient.findByUserId(userId);
         if (member == null) {
             throw new UsernameNotFoundException("No user found");
         }

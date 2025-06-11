@@ -1,19 +1,15 @@
 package shop.dodream.authapi.dto;
 
-
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequest {
+@NoArgsConstructor
+public class UserResponse {
 
-    @NotBlank
     private String userId;
-    @NotBlank
     private String password;
+    private Role role;
 }

@@ -13,7 +13,6 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
     private final StringRedisTemplate redisTemplate;
 
     @Override
-
     public void save(String userId, String refreshToken, long ttlMillis) {
         redisTemplate.opsForValue().set("refresh:" + userId, refreshToken, Duration.ofMillis(ttlMillis));
     }
@@ -21,13 +20,11 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
     @Override
     public boolean isValid(String userId, String refreshToken) {
         String saved = redisTemplate.opsForValue().get("refresh:" + userId);
-
         return saved != null && saved.equals(refreshToken);
     }
 
     @Override
     public void delete(String userId) {
         redisTemplate.delete("refresh:"+userId);
-
     }
 }
