@@ -10,4 +10,5 @@ public interface MemberFeignClient {
 
     @GetMapping("/members/userId")
     MemberResponse findByUserId(@RequestParam("userId")String userId);
+
 }

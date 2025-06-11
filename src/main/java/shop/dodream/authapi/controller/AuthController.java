@@ -30,6 +30,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest request) {
         Authentication auth = authenticationManager.authenticate(
+
                 new UsernamePasswordAuthenticationToken(request.getUserId(), request.getPassword())
         );
 
@@ -37,6 +38,7 @@ public class AuthController {
 
         String accessToken = jwtTokenProvider.createAccessToken(member.getUserId(), member.getRole());
         String refreshToken = jwtTokenProvider.createRefreshToken(member.getUserId());
+
 
         return ResponseEntity.ok(new TokenResponse(
                 accessToken,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),refreshToken));
@@ -47,6 +49,7 @@ public class AuthController {
         if(!jwtTokenProvider.validateToken(request.getRefreshToken())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
         String userId = jwtTokenProvider.getUserIdFromToken(request.getRefreshToken());
 
         if(!refreshTokenRepository.isValid(userId, request.getRefreshToken())) {
@@ -55,6 +58,7 @@ public class AuthController {
 
         Role role = memberFeignClient.findByUserId(userId).getRole();
         String newAccessToken = jwtTokenProvider.createAccessToken(userId, role);
+
 
         return ResponseEntity.ok(new TokenResponse(
                 newAccessToken,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),null)

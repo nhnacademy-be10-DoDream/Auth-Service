@@ -19,6 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
         MemberResponse member = memberFeignClient.findByUserId(userId);
+
         if (member == null) {
             throw new UsernameNotFoundException("No user found");
         }
