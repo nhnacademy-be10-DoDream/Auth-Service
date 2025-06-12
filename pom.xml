@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>shop.dodream</groupId>
-    <artifactId>auth-api</artifactId>
+    <artifactId>auth-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>auth-api</name>
-    <description>auth-api</description>
+    <name>auth-service</name>
+    <description>auth-service</description>
     <url/>
     <licenses>
         <license/>
@@ -91,6 +91,10 @@
             <version>${jjwt.version}</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -105,6 +109,7 @@
     </dependencyManagement>
 
     <build>
+        <finalName>auth</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
