@@ -13,8 +13,8 @@ public class RefreshTokenRepositoryImpl implements RefreshTokenRepository {
     private final StringRedisTemplate redisTemplate;
 
     @Override
-    public void save(String userId, String refreshToken, long ttlMillis) {
-        redisTemplate.opsForValue().set("refresh:" + userId, refreshToken, Duration.ofMillis(ttlMillis));
+    public void save(String userId, String refreshToken) {
+        redisTemplate.opsForValue().set("refresh:" + userId, refreshToken, Duration.ofDays(1));
     }
 
     @Override

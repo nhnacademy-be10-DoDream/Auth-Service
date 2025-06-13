@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +29,7 @@ public class AuthController {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<TokenResponse> login(@Validated @RequestBody LoginRequest request) {
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUserId(), request.getPassword())
         );
@@ -37,6 +38,8 @@ public class AuthController {
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), user.getRole());
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
+        refreshTokenRepository.save(user.getUserId(), refreshToken);
+
 
         return ResponseEntity.ok(new TokenResponse(
                 accessToken,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),refreshToken));

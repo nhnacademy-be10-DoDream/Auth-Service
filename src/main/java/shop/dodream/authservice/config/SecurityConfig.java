@@ -3,6 +3,8 @@ package shop.dodream.authservice.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,12 +16,14 @@ import shop.dodream.authservice.jwt.JwtAuthenticationEntryPoint;
 import shop.dodream.authservice.jwt.JwtAuthenticationFilter;
 import shop.dodream.authservice.jwt.JwtProperties;
 import shop.dodream.authservice.jwt.JwtTokenProvider;
+import shop.dodream.authservice.service.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final CustomUserDetailsService userDetailsService;
     private final JwtTokenProvider jwtTokenProvider;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
     private final JwtProperties jwtProperties;
@@ -33,9 +37,7 @@ public class SecurityConfig {
                 .exceptionHandling().authenticationEntryPoint(authenticationEntryPoint)
                 .and()
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/**").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers("/auth/**","/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider,jwtProperties), UsernamePasswordAuthenticationFilter.class)
@@ -45,6 +47,15 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class)
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder())
+                .and()
+                .build();
     }
 
 
