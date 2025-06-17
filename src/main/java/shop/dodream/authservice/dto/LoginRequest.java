@@ -3,11 +3,11 @@ package shop.dodream.authservice.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginRequest {

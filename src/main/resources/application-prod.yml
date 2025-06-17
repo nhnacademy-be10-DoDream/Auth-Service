@@ -15,3 +15,17 @@ eureka:
   instance:
     prefer-ip-address: false
     hostname: dodream.shop
+
+payco:
+  client-id: 3RDAXDUPvyl59DIVRZf8vA9
+  client-secret: pTZYd7Tiri7a8g39U6QCKgKG
+  redirect-uri: https://dodream.shop/auth/login/payco/callback
+  authorization-uri: https://id.payco.com/oauth2.0/authorize
+  token-uri: https://id.payco.com/oauth2.0/token
+  user-info-uri: https://apis-payco.krp.toastoven.net/payco/friends/find_member_v2.json
+  gateway-uri: https://dodream.shop
+
+jwt:
+  cookie:
+    secure: true
+    same-site: None
