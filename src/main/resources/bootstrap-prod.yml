@@ -1,6 +1,6 @@
 spring:
   config:
-    import: configserver:
+    import: "configserver:"
   cloud:
     config:
       uri: http://localhost:10332
