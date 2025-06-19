@@ -1,10 +1,10 @@
-package shop.dodream.authapi;
+package shop.dodream.authservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class AuthApiApplicationTests {
+class AuthServiceApplicationTests {
 
     @Test
     void contextLoads() {

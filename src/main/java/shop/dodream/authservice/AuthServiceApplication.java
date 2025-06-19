@@ -1,4 +1,4 @@
-package shop.dodream.authapi;
+package shop.dodream.authservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,10 +6,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
-public class AuthApiApplication {
+public class AuthServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(AuthApiApplication.class, args);
+        SpringApplication.run(AuthServiceApplication.class, args);
     }
 
 }
