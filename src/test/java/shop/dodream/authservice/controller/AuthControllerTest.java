@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import shop.dodream.authservice.client.UserFeignClient;
 import shop.dodream.authservice.dto.LoginRequest;
 import shop.dodream.authservice.dto.Role;
+import shop.dodream.authservice.dto.Status;
 import shop.dodream.authservice.dto.UserResponse;
 import shop.dodream.authservice.jwt.JwtProperties;
 import shop.dodream.authservice.jwt.JwtTokenProvider;
@@ -49,7 +50,7 @@ public class AuthControllerTest {
         LoginRequest request = new LoginRequest("testuser", rawPassword);
 
         given(userFeignClient.findByUserId("testuser"))
-                .willReturn(new UserResponse("testuser", encoded, Role.USER));
+                .willReturn(new UserResponse("testuser", encoded, Role.USER, Status.ACTIVE));
 
         given(jwtTokenProvider.createAccessToken(any(), any()))
                 .willReturn("mocked.access.token");

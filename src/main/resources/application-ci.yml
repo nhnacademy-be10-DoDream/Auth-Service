@@ -1,0 +1,23 @@
+# application-ci.yml
+spring:
+  cloud:
+    config:
+      enabled: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+jwt:
+  secret: dummy-ci-secret
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  health:
+    db:
+      enabled: true
+    redis:
+      enabled: true
