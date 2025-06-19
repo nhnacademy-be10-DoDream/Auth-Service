@@ -1,7 +1,7 @@
 spring:
   cloud:
     config:
-      discovery:
-        enabled: true
-        service-id: CONFIG
+      uri: http://localhost:10332
+      name: ${spring.application.name}
+      profile: ${spring.profiles.active}
       label: main
