@@ -113,8 +113,8 @@ jobs:
           username: ${{ secrets.SSH_ID }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: "target/${{ env.SERVICE_NAME }}.jar"
-          target: "~/target"
+          source: "target/*.jar"
+          target: "~/"
           rm: false
 
       - name: 🚀 Execute startup.sh on Remote
