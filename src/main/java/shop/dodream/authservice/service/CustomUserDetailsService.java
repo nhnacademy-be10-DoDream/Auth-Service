@@ -18,6 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserFeignClient userFeignClient;
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
+
         UserResponse user = userFeignClient.findByUserId(userId);
         if (user == null) {
             throw new UsernameNotFoundException("No user found");

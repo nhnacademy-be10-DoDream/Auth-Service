@@ -12,4 +12,5 @@ public class UserResponse {
     private String userId;
     private String password;
     private Role role;
+    private Status status;
 }

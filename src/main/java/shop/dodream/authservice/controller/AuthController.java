@@ -12,11 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import shop.dodream.authservice.client.UserFeignClient;
-import shop.dodream.authservice.dto.LoginRequest;
-import shop.dodream.authservice.dto.Role;
-import shop.dodream.authservice.dto.TokenResponse;
-import shop.dodream.authservice.dto.UserResponse;
-import shop.dodream.authservice.dto.payco.PaycoProperties;
+import shop.dodream.authservice.dto.*;
+import shop.dodream.authservice.exception.AccountException;
 import shop.dodream.authservice.jwt.JwtCookieProperties;
 import shop.dodream.authservice.jwt.JwtTokenProvider;
 import shop.dodream.authservice.repository.RefreshTokenRepository;
@@ -36,7 +33,6 @@ public class AuthController {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PaycoOAuthService paycoOAuthService;
     private final JwtCookieProperties jwtCookieProperties;
-    private final PaycoProperties paycoProperties;
 
 
     private void addTokenCookie(HttpServletResponse response, String token) {
@@ -69,11 +65,18 @@ public class AuthController {
 
         UserResponse user = userFeignClient.findByUserId(request.getUserId());
 
+        if(user.getStatus() == Status.DORMANT){
+            throw new AccountException("휴면 계정입니다. 인증 후 로그인 해주세요.",Status.DORMANT, user.getUserId());
+        }else if(user.getStatus() == Status.WITHDRAWN){
+            throw new AccountException("탈퇴된 계정입니다. 다른 아이디로 로그인 해주세요.",Status.WITHDRAWN, user.getUserId());
+        }
+
         String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), user.getRole());
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
         refreshTokenRepository.save(user.getUserId(), refreshToken);
         addTokenCookie(response,accessToken);
         addRefreshTokenCookie(response,refreshToken);
+        userFeignClient.updateLastLogin(user.getUserId());
 
         return ResponseEntity.ok().build();
     }
@@ -106,17 +109,16 @@ public class AuthController {
     }
 
     // Payco Redirect 이후 code + state 전달 → JWT 발급
-    @GetMapping("/login/payco/callback")
-    public void handlePaycoCallback(
+    @PostMapping("/payco/callback")
+    public ResponseEntity<Void> handlePaycoCallback(
             @RequestParam("code") String code,
             @RequestParam("state") String state,
             HttpServletResponse response
-    )throws IOException {
+    ){
         TokenResponse tokenResponse = paycoOAuthService.loginWithPayco(code, state);
         addTokenCookie(response,tokenResponse.getAccessToken());
         addRefreshTokenCookie(response,tokenResponse.getRefreshToken());
-
-        response.sendRedirect(paycoProperties.getGatewayUri()+"/front/home");
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/logout")

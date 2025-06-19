@@ -10,9 +10,11 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import shop.dodream.authservice.client.UserFeignClient;
+import shop.dodream.authservice.dto.Status;
 import shop.dodream.authservice.dto.TokenResponse;
 import shop.dodream.authservice.dto.UserResponse;
 import shop.dodream.authservice.dto.payco.*;
+import shop.dodream.authservice.exception.AccountException;
 import shop.dodream.authservice.jwt.JwtProperties;
 import shop.dodream.authservice.jwt.JwtTokenProvider;
 import shop.dodream.authservice.repository.RefreshTokenRepository;
@@ -50,9 +52,15 @@ public class PaycoOAuthService {
         String accessToken = requestAccessToken(code,state);
         PaycoUserInfo info = requestUserInfo(accessToken);
         UserResponse user = findOrCreateUser(info);
+        if(user.getStatus() == Status.DORMANT){
+            throw new AccountException("휴면 계정입니다. 인증 후 로그인 해주세요.",Status.DORMANT,user.getUserId());
+        }else if(user.getStatus() == Status.WITHDRAWN){
+            throw new AccountException("탈퇴된 계정입니다. 다른 아이디로 로그인 해주세요.",Status.WITHDRAWN,user.getUserId());
+        }
         String accessJwt = jwtTokenProvider.createAccessToken(user.getUserId(),user.getRole());
         String refreshJwt = jwtTokenProvider.createRefreshToken(user.getUserId());
         refreshTokenRepository.save(user.getUserId(), refreshJwt);
+        userFeignClient.updateLastLogin(user.getUserId());
         return new TokenResponse(accessJwt,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),refreshJwt);
     }
 

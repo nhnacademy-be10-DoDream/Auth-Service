@@ -47,16 +47,6 @@ public class JwtTokenProvider {
         }
     }
 
-    public Role getRoleFromToken(String token){
-        String role = Jwts.parser()
-                .setSigningKey(jwtProperties.getSecret().getBytes())
-                .parseClaimsJws(token)
-                .getBody()
-                .get("role",String.class);
-
-        return Role.valueOf(role);
-    }
-
     public String getUserIdFromToken(String token) {
         return Jwts.parser()
                 .setSigningKey(jwtProperties.getSecret().getBytes())
