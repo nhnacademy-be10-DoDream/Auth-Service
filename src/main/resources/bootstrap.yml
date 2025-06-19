@@ -1,9 +1,8 @@
 spring:
   config:
-    import: "configserver:"
+    import: configserver:http://localhost:10332
   cloud:
     config:
-      uri: http://localhost:10332
       name: ${spring.application.name}
       profile: ${spring.profiles.active}
       label: main
