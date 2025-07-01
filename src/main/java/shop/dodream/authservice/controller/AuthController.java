@@ -19,7 +19,6 @@ import shop.dodream.authservice.jwt.JwtTokenProvider;
 import shop.dodream.authservice.repository.RefreshTokenRepository;
 import shop.dodream.authservice.service.PaycoOAuthService;
 
-import java.io.IOException;
 import java.time.Duration;
 
 @RestController
@@ -103,9 +102,9 @@ public class AuthController {
 
     // Payco 로그인 URL 리턴
     @GetMapping("/payco/authorize")
-    public void getAuthorizationUrl(HttpServletResponse response) throws IOException {
+    public ResponseEntity<String> getAuthorizationUrl(){
         String url = paycoOAuthService.buildAuthorizationUrl();
-        response.sendRedirect(url);
+        return ResponseEntity.ok(url);
     }
 
     // Payco Redirect 이후 code + state 전달 → JWT 발급

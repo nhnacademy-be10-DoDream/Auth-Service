@@ -15,5 +15,4 @@ public class PaycoProperties {
     private String authorizationUri;
     private String tokenUri;
     private String userInfoUri;
-    private String gatewayUri;
 }
