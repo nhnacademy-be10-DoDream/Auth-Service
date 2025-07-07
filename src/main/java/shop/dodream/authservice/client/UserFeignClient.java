@@ -5,7 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import shop.dodream.authservice.dto.UserResponse;
 import shop.dodream.authservice.dto.payco.PaycoUserRequest;
 
-@FeignClient(name = "user",url = "s1.java21.net:10324")
+
+@FeignClient(name = "user")
 public interface UserFeignClient {
 
     @GetMapping("/accounts/{user-id}")
