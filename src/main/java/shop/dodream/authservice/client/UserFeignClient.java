@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.*;
 import shop.dodream.authservice.dto.UserResponse;
 import shop.dodream.authservice.dto.payco.PaycoUserRequest;
 
-
 @FeignClient(name = "user")
 public interface UserFeignClient {
 
