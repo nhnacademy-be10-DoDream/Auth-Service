@@ -52,8 +52,6 @@ public class AuthControllerTest {
         given(userFeignClient.findByUserId("testuser"))
                 .willReturn(new UserResponse("testuser", encoded, Role.USER, Status.ACTIVE));
 
-        given(jwtTokenProvider.createAccessToken(any(), any()))
-                .willReturn("mocked.access.token");
 
         given(jwtTokenProvider.createRefreshToken(any()))
                 .willReturn("mocked.refresh.token");
