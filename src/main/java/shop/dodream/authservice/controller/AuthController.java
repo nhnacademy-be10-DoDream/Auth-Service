@@ -8,7 +8,6 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import shop.dodream.authservice.client.UserFeignClient;
@@ -16,10 +15,11 @@ import shop.dodream.authservice.dto.*;
 import shop.dodream.authservice.exception.AccountException;
 import shop.dodream.authservice.jwt.JwtCookieProperties;
 import shop.dodream.authservice.jwt.JwtTokenProvider;
-import shop.dodream.authservice.repository.RefreshTokenRepository;
+import shop.dodream.authservice.repository.TokenRepository;
 import shop.dodream.authservice.service.PaycoOAuthService;
 
 import java.time.Duration;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +29,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserFeignClient userFeignClient;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final TokenRepository tokenRepository;
     private final PaycoOAuthService paycoOAuthService;
     private final JwtCookieProperties jwtCookieProperties;
 
@@ -58,7 +58,7 @@ public class AuthController {
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<Void> login(@Validated @RequestBody LoginRequest request, HttpServletResponse response) {
-        Authentication auth = authenticationManager.authenticate(
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUserId(), request.getPassword())
         );
 
@@ -70,9 +70,12 @@ public class AuthController {
             throw new AccountException("탈퇴된 계정입니다. 다른 아이디로 로그인 해주세요.",Status.WITHDRAWN, user.getUserId());
         }
 
-        String accessToken = jwtTokenProvider.createAccessToken(user.getUserId(), user.getRole());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
-        refreshTokenRepository.save(user.getUserId(), refreshToken);
+        String uuid = UUID.randomUUID().toString();
+        SessionUser sessionUser = new SessionUser(user.getUserId(),user.getRole());
+        String accessToken = jwtTokenProvider.createAccessToken(uuid);
+        String refreshToken = jwtTokenProvider.createRefreshToken(uuid);
+
+        tokenRepository.save(uuid, sessionUser, refreshToken);
         addTokenCookie(response,accessToken);
         addRefreshTokenCookie(response,refreshToken);
         userFeignClient.updateLastLogin(user.getUserId());
@@ -86,15 +89,13 @@ public class AuthController {
         if(!jwtTokenProvider.validateToken(refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        String userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
-
-        if(!refreshTokenRepository.isValid(userId, refreshToken)) {
+        String uuid = jwtTokenProvider.getUuidFromToken(refreshToken);
+        SessionUser sessionUser = tokenRepository.findByUuid(uuid);
+        if(sessionUser==null || !tokenRepository.isValid(uuid,sessionUser,refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Role role = userFeignClient.findByUserId(userId).getRole();
-        String newAccessToken = jwtTokenProvider.createAccessToken(userId, role);
-
+        String newAccessToken = jwtTokenProvider.createAccessToken(uuid);
         addTokenCookie(response,newAccessToken);
 
         return ResponseEntity.ok().build();
@@ -123,8 +124,9 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@CookieValue(name = "refreshToken", required = false) String refreshToken,
                                        HttpServletResponse response) {
-        if (refreshToken != null) {
-            refreshTokenRepository.delete(refreshToken);
+        if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken)) {
+            String uuid = jwtTokenProvider.getUuidFromToken(refreshToken);
+            tokenRepository.delete(uuid);
         }
         ResponseCookie accessTokenClear = ResponseCookie.from("accessToken", "")
                 .httpOnly(true)

@@ -10,6 +10,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import shop.dodream.authservice.client.UserFeignClient;
+import shop.dodream.authservice.dto.SessionUser;
 import shop.dodream.authservice.dto.Status;
 import shop.dodream.authservice.dto.TokenResponse;
 import shop.dodream.authservice.dto.UserResponse;
@@ -17,7 +18,7 @@ import shop.dodream.authservice.dto.payco.*;
 import shop.dodream.authservice.exception.AccountException;
 import shop.dodream.authservice.jwt.JwtProperties;
 import shop.dodream.authservice.jwt.JwtTokenProvider;
-import shop.dodream.authservice.repository.RefreshTokenRepository;
+import shop.dodream.authservice.repository.TokenRepository;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -31,7 +32,7 @@ public class PaycoOAuthService {
     private final RestTemplate restTemplate;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserFeignClient userFeignClient;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final TokenRepository tokenRepository;
     private final JwtProperties jwtProperties;
     private final PasswordEncoder passwordEncoder;
     private final PaycoProperties paycoProperties;
@@ -57,9 +58,12 @@ public class PaycoOAuthService {
         }else if(user.getStatus() == Status.WITHDRAWN){
             throw new AccountException("탈퇴된 계정입니다. 다른 아이디로 로그인 해주세요.",Status.WITHDRAWN,user.getUserId());
         }
-        String accessJwt = jwtTokenProvider.createAccessToken(user.getUserId(),user.getRole());
-        String refreshJwt = jwtTokenProvider.createRefreshToken(user.getUserId());
-        refreshTokenRepository.save(user.getUserId(), refreshJwt);
+
+        String uuid = UUID.randomUUID().toString();
+        SessionUser sessionUser = new SessionUser(user.getUserId(),user.getRole());
+        String accessJwt = jwtTokenProvider.createAccessToken(uuid);
+        String refreshJwt = jwtTokenProvider.createRefreshToken(uuid);
+        tokenRepository.save(uuid,sessionUser, refreshJwt);
         userFeignClient.updateLastLogin(user.getUserId());
         return new TokenResponse(accessJwt,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),refreshJwt);
     }
