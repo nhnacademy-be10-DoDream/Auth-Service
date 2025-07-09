@@ -14,7 +14,7 @@ import shop.dodream.authservice.dto.LoginRequest;
 import shop.dodream.authservice.dto.Role;
 import shop.dodream.authservice.dto.Status;
 import shop.dodream.authservice.dto.UserResponse;
-import shop.dodream.authservice.jwt.JwtProperties;
+import shop.dodream.authservice.jwt.properties.JwtProperties;
 import shop.dodream.authservice.jwt.JwtTokenProvider;
 
 import static org.mockito.ArgumentMatchers.any;

@@ -1,5 +1,6 @@
 package shop.dodream.authservice.repository.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -16,6 +17,7 @@ public class TokenRepositoryImpl implements TokenRepository {
     private final StringRedisTemplate stringRedisTemplate;
     private static final String KEY_PREFIX = "session:";
     private static final String REFRESH_KEY_PREFIX = "refresh:";
+    private final ObjectMapper objectMapper;
 
     @Override
     public void save(String uuid, SessionUser sessionUser,String refreshToken) {
@@ -25,14 +27,16 @@ public class TokenRepositoryImpl implements TokenRepository {
 
     @Override
     public boolean isValid(String uuid, SessionUser sessionUser,String refreshToken) {
-        Object storedSession = redisTemplate.opsForValue().get(KEY_PREFIX + uuid);
+        Object obj = redisTemplate.opsForValue().get(KEY_PREFIX + uuid);
+        SessionUser storedSession = objectMapper.convertValue(obj, SessionUser.class);
         String storedRefresh = stringRedisTemplate.opsForValue().get(REFRESH_KEY_PREFIX + uuid);
         return sessionUser.equals(storedSession) && refreshToken.equals(storedRefresh);
     }
 
     @Override
     public SessionUser findByUuid(String uuid) {
-        return (SessionUser) redisTemplate.opsForValue().get(KEY_PREFIX + uuid);
+        Object obj = redisTemplate.opsForValue().get(KEY_PREFIX + uuid);
+        return  objectMapper.convertValue(obj, SessionUser.class);
     }
 
     @Override

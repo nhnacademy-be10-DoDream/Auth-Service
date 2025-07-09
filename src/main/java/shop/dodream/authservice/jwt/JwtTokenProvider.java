@@ -5,7 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import shop.dodream.authservice.dto.Role;
+import shop.dodream.authservice.jwt.properties.JwtProperties;
 
 import java.util.Date;
 
