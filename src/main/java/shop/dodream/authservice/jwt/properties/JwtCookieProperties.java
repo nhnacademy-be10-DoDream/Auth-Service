@@ -1,4 +1,4 @@
-package shop.dodream.authservice.jwt;
+package shop.dodream.authservice.jwt.properties;
 
 
 import lombok.Data;

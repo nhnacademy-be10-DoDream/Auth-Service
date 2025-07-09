@@ -16,7 +16,7 @@ import shop.dodream.authservice.dto.TokenResponse;
 import shop.dodream.authservice.dto.UserResponse;
 import shop.dodream.authservice.dto.payco.*;
 import shop.dodream.authservice.exception.AccountException;
-import shop.dodream.authservice.jwt.JwtProperties;
+import shop.dodream.authservice.jwt.properties.JwtProperties;
 import shop.dodream.authservice.jwt.JwtTokenProvider;
 import shop.dodream.authservice.repository.TokenRepository;
 
