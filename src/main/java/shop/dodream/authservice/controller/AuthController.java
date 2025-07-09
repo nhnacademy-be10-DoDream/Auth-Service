@@ -1,5 +1,6 @@
 package shop.dodream.authservice.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,28 +19,28 @@ public class AuthController {
     private final AuthService authService;
 
 
-    // 로그인
+    @Operation(summary = "로그인",description = "로그인 시 JWT를 발급합니다.")
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Validated @RequestBody LoginRequest request) {
         TokenResponse tokenResponse = authService.login(request);
         return ResponseEntity.ok().body(tokenResponse);
     }
 
-    // access토큰 재발급
+    @Operation(summary = "토큰 재발급",description = "만료된 accessToken을 refreshToken을 사용하여 재발급 합니다.")
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
         TokenResponse tokenResponse = authService.refresh(refreshToken);
         return ResponseEntity.ok().body(tokenResponse);
     }
 
-    // Payco 로그인 URL 리턴
+    @Operation(summary = "페이코 로그인 페이지",description = "페이코 로그인 페이지 url을 전달합니다.")
     @GetMapping("/payco/authorize")
     public ResponseEntity<String> getAuthorizationUrl(){
         String url = paycoOAuthService.buildAuthorizationUrl();
         return ResponseEntity.ok(url);
     }
 
-    // Payco Redirect 이후 code + state 전달 → JWT 발급
+    @Operation(summary = "페이코 로그인",description = "페이코 OAuth2로그인 시 JWT를 발급합니다.")
     @PostMapping("/payco/callback")
     public ResponseEntity<TokenResponse> handlePaycoCallback(
             @RequestParam("code") String code,
@@ -49,6 +50,7 @@ public class AuthController {
         return ResponseEntity.ok().body(tokenResponse);
     }
 
+    @Operation(summary = "로그아웃",description = "로그아웃 시 토큰을 제거 합니다.")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@CookieValue(name = "refreshToken", required = false) String refreshToken,
                                        HttpServletResponse response) {
