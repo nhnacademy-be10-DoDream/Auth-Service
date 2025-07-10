@@ -60,7 +60,7 @@ public class AuthController {
     }
 
     @Operation(summary = "사용자 정보 전달",description = "프론트에서 관리자 접근을 위한 사용자 권한 및 아이디를 전달합니다.")
-    @PostMapping("/auth/role")
+    @PostMapping("/role")
     public ResponseEntity<SessionUser> getSessionUser(HttpServletRequest request) {
         SessionUser sessionUser = authService.getSessionUser(request);
         return ResponseEntity.ok().body(sessionUser);
