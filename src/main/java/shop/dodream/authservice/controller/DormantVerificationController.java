@@ -1,5 +1,6 @@
 package shop.dodream.authservice.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ public class DormantVerificationController {
     private final DoorayMessageSender doorayMessageSender;
     private final UserFeignClient userFeignClient;
 
+    @Operation(summary = "인증번호 전송",description = "휴면 계정의 인증 시 인증번호를 전송합니다.")
     @PostMapping("/request")
     public ResponseEntity<Void> sendVerificationCode(@RequestParam String userId){
         UserResponse user = userFeignClient.findByUserId(userId);
@@ -32,6 +34,7 @@ public class DormantVerificationController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "인증",description = "인증번호를 검증한 후 일치하면 사용자의 상태를 변경합니다.")
     @PostMapping("/verify")
     public ResponseEntity<String> verifyCode(@RequestParam String userId, @RequestParam String code){
         if(dormantService.verifyCode(userId,code)){
