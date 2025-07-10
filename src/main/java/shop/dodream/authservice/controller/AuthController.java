@@ -1,6 +1,7 @@
 package shop.dodream.authservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -57,5 +58,13 @@ public class AuthController {
         authService.logout(refreshToken, response);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "사용자 정보 전달",description = "프론트에서 관리자 접근을 위한 사용자 권한 및 아이디를 전달합니다.")
+    @PostMapping("/auth/role")
+    public ResponseEntity<SessionUser> getSessionUser(HttpServletRequest request) {
+        SessionUser sessionUser = authService.getSessionUser(request);
+        return ResponseEntity.ok().body(sessionUser);
+    }
+
 
 }

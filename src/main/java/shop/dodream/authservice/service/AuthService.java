@@ -1,5 +1,6 @@
 package shop.dodream.authservice.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -30,6 +31,7 @@ public class AuthService {
     private final TokenRepository tokenRepository;
     private final UserFeignClient userFeignClient;
     private final JwtProperties jwtProperties;
+    private static final String BEARER_PREFIX = "Bearer ";
 
     public TokenResponse login(LoginRequest request) {
         authenticationManager.authenticate(
@@ -87,6 +89,19 @@ public class AuthService {
         deleteTokenCookies(response);
     }
 
+    public SessionUser getSessionUser(HttpServletRequest request) {
+        String accessToken = extractToken(request);
+        if(!jwtTokenProvider.validateToken(accessToken)) {
+            throw new AuthException("유효한 토큰이 아닙니다.", HttpStatus.UNAUTHORIZED);
+        }
+        String uuid = jwtTokenProvider.getUuidFromToken(accessToken);
+        SessionUser sessionUser = tokenRepository.findByUuid(uuid);
+        if (sessionUser == null) {
+            throw new AuthException("세션이 만료되었습니다. 다시 로그인 해주세요.", HttpStatus.UNAUTHORIZED);
+        }
+        return sessionUser;
+    }
+
     private void deleteTokenCookies(HttpServletResponse response) {
         ResponseCookie accessTokenClear = ResponseCookie.from("accessToken", "")
                 .httpOnly(true)
@@ -105,5 +120,13 @@ public class AuthService {
 
         response.addHeader(HttpHeaders.SET_COOKIE, accessTokenClear.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenClear.toString());
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if(header != null && header.startsWith(BEARER_PREFIX)) {
+            return header.substring(BEARER_PREFIX.length());
+        }
+        return null;
     }
 }
