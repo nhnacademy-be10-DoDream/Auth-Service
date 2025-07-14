@@ -11,6 +11,7 @@ import java.util.Collections;
 public class OpenApiConfig {
 
     @Bean
+    @Primary
     public OpenAPI authServiceOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
