@@ -16,7 +16,6 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("인증 서비스 API")
                         .version("v1.0")
-                        .description("회원 인증, JWT 발급을 제공하는 API 문서입니다."))
-                .servers(Collections.emptyList());
+                        .description("회원 인증, JWT 발급을 제공하는 API 문서입니다."));
     }
 }
