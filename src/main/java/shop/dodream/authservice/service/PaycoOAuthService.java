@@ -1,6 +1,7 @@
 package shop.dodream.authservice.service;
 
 import feign.FeignException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -49,7 +50,7 @@ public class PaycoOAuthService {
                 .build().toUriString();
     }
 
-    public TokenResponse loginWithPayco(String code, String state) {
+    public TokenResponse loginWithPayco(String code, String state, HttpServletRequest request) {
         String accessToken = requestAccessToken(code,state);
         PaycoUserInfo info = requestUserInfo(accessToken);
         UserResponse user = findOrCreateUser(info);
@@ -63,7 +64,9 @@ public class PaycoOAuthService {
         SessionUser sessionUser = new SessionUser(user.getUserId(),user.getRole());
         String accessJwt = jwtTokenProvider.createAccessToken(uuid);
         String refreshJwt = jwtTokenProvider.createRefreshToken(uuid);
-        tokenRepository.save(uuid,sessionUser, refreshJwt);
+        String userAgent = request.getHeader(HttpHeaders.USER_AGENT);
+        String ip = request.getRemoteAddr();
+        tokenRepository.save(uuid,sessionUser, refreshJwt,userAgent,ip);
         userFeignClient.updateLastLogin(user.getUserId());
         return new TokenResponse(accessJwt,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),refreshJwt);
     }
