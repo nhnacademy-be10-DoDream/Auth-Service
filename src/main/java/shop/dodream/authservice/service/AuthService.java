@@ -75,7 +75,7 @@ public class AuthService {
 
         String ip = extractClientIp(servletRequest);
         String userAgent = servletRequest.getHeader(HttpHeaders.USER_AGENT);
-        if (!tokenRepository.isValid(uuid, sessionUser, refreshToken,ip, userAgent)) {
+        if (!tokenRepository.isValid(uuid, sessionUser, refreshToken,userAgent,ip)) {
             throw new AuthException("리프레시 토큰이 유효하지 않습니다.", HttpStatus.UNAUTHORIZED);
         }
 

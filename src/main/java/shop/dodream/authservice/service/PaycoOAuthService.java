@@ -65,7 +65,7 @@ public class PaycoOAuthService {
         String accessJwt = jwtTokenProvider.createAccessToken(uuid);
         String refreshJwt = jwtTokenProvider.createRefreshToken(uuid);
         String userAgent = request.getHeader(HttpHeaders.USER_AGENT);
-        String ip = request.getRemoteAddr();
+        String ip = extractClientIp(request);
         tokenRepository.save(uuid,sessionUser, refreshJwt,userAgent,ip);
         userFeignClient.updateLastLogin(user.getUserId());
         return new TokenResponse(accessJwt,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),refreshJwt);
@@ -134,5 +134,12 @@ public class PaycoOAuthService {
 
             return userFeignClient.createPaycoUser(request);
         }
+    }
+    private String extractClientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0];
+        }
+        return request.getRemoteAddr();
     }
 }

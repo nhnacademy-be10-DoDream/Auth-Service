@@ -9,40 +9,45 @@ import shop.dodream.authservice.dto.SessionUser;
 import shop.dodream.authservice.repository.TokenRepository;
 
 import java.time.Duration;
+import java.util.Objects;
 
 @Repository
 @RequiredArgsConstructor
 public class TokenRepositoryImpl implements TokenRepository {
-    private final RedisTemplate<String,Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     private static final String KEY_PREFIX = "session:";
     private static final String REFRESH_KEY_PREFIX = "refresh:";
     private final ObjectMapper objectMapper;
 
     @Override
-    public void save(String uuid, SessionUser sessionUser,String refreshToken,String userAgent,String ip) {
-        redisTemplate.opsForValue().set(KEY_PREFIX+uuid, sessionUser, Duration.ofDays(1));
-        RefreshTokenInfo tokenInfo = new RefreshTokenInfo(refreshToken, userAgent,ip);
+    public void save(String uuid, SessionUser sessionUser, String refreshToken, String userAgent, String ip) {
+        redisTemplate.opsForValue().set(KEY_PREFIX + uuid, sessionUser, Duration.ofDays(1));
+        RefreshTokenInfo tokenInfo = new RefreshTokenInfo(refreshToken, userAgent, ip);
         redisTemplate.opsForValue().set(REFRESH_KEY_PREFIX + uuid, tokenInfo, Duration.ofDays(1));
     }
 
     @Override
-    public boolean isValid(String uuid, SessionUser sessionUser,String refreshToken,String userAgent,String ip) {
+    public boolean isValid(String uuid, SessionUser sessionUser, String refreshToken, String userAgent, String ip) {
         Object sessionObj = redisTemplate.opsForValue().get(KEY_PREFIX + uuid);
         Object tokenObj = redisTemplate.opsForValue().get(REFRESH_KEY_PREFIX + uuid);
         if (sessionObj == null || tokenObj == null) return false;
 
-        SessionUser storedSession = objectMapper.convertValue(sessionObj, SessionUser.class);
-        RefreshTokenInfo storedRefreshToken = objectMapper.convertValue(tokenObj, RefreshTokenInfo.class);
-        return sessionUser.equals(storedSession)
-                && refreshToken.equals(storedRefreshToken.getToken())
-                && ip.equals(storedRefreshToken.getIp())
-                && userAgent.equals(storedRefreshToken.getUserAgent());
+        try {
+            SessionUser storedSession = objectMapper.convertValue(sessionObj, SessionUser.class);
+            RefreshTokenInfo storedRefreshToken = objectMapper.convertValue(tokenObj, RefreshTokenInfo.class);
+            return sessionUser.equals(storedSession)
+                    && refreshToken.equals(storedRefreshToken.getToken())
+                    && Objects.equals(ip, storedRefreshToken.getIp())
+                    && Objects.equals(userAgent, storedRefreshToken.getUserAgent());
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
     public SessionUser findByUuid(String uuid) {
         Object obj = redisTemplate.opsForValue().get(KEY_PREFIX + uuid);
-        return  objectMapper.convertValue(obj, SessionUser.class);
+        return objectMapper.convertValue(obj, SessionUser.class);
     }
 
     @Override
