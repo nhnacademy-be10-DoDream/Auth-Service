@@ -22,15 +22,15 @@ public class AuthController {
 
     @Operation(summary = "로그인",description = "로그인 시 JWT를 발급합니다.")
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@Validated @RequestBody LoginRequest request) {
-        TokenResponse tokenResponse = authService.login(request);
+    public ResponseEntity<TokenResponse> login(@Validated @RequestBody LoginRequest request,HttpServletRequest servletRequest) {
+        TokenResponse tokenResponse = authService.login(request,servletRequest);
         return ResponseEntity.ok().body(tokenResponse);
     }
 
     @Operation(summary = "토큰 재발급",description = "만료된 accessToken을 refreshToken을 사용하여 재발급 합니다.")
     @PostMapping("/refresh")
-    public ResponseEntity<TokenResponse> refresh(@CookieValue(name = "refreshToken", required = false) String refreshToken) {
-        TokenResponse tokenResponse = authService.refresh(refreshToken);
+    public ResponseEntity<TokenResponse> refresh(@CookieValue(name = "refreshToken", required = false) String refreshToken,HttpServletRequest servletRequest) {
+        TokenResponse tokenResponse = authService.refresh(refreshToken,servletRequest);
         return ResponseEntity.ok().body(tokenResponse);
     }
 
@@ -45,9 +45,10 @@ public class AuthController {
     @PostMapping("/payco/callback")
     public ResponseEntity<TokenResponse> handlePaycoCallback(
             @RequestParam("code") String code,
-            @RequestParam("state") String state
+            @RequestParam("state") String state,
+            HttpServletRequest request
     ){
-        TokenResponse tokenResponse = paycoOAuthService.loginWithPayco(code, state);
+        TokenResponse tokenResponse = paycoOAuthService.loginWithPayco(code, state, request);
         return ResponseEntity.ok().body(tokenResponse);
     }
 

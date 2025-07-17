@@ -33,7 +33,7 @@ public class AuthService {
     private final JwtProperties jwtProperties;
     private static final String BEARER_PREFIX = "Bearer ";
 
-    public TokenResponse login(LoginRequest request) {
+    public TokenResponse login(LoginRequest request,HttpServletRequest servletRequest) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUserId(), request.getPassword())
         );
@@ -49,13 +49,15 @@ public class AuthService {
         SessionUser sessionUser = new SessionUser(user.getUserId(), user.getRole());
         String accessToken = jwtTokenProvider.createAccessToken(uuid);
         String refreshToken = jwtTokenProvider.createRefreshToken(uuid);
+        String userAgent = servletRequest.getHeader(HttpHeaders.USER_AGENT);
+        String ip = extractClientIp(servletRequest);
 
-        tokenRepository.save(uuid, sessionUser, refreshToken);
+        tokenRepository.save(uuid, sessionUser, refreshToken, userAgent, ip);
         userFeignClient.updateLastLogin(user.getUserId());
         return new TokenResponse(accessToken,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),refreshToken);
     }
 
-    public TokenResponse refresh(String refreshToken) {
+    public TokenResponse refresh(String refreshToken,HttpServletRequest servletRequest) {
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new AuthException("리프레시 토큰이 없습니다.", HttpStatus.BAD_REQUEST);
         }
@@ -71,7 +73,9 @@ public class AuthService {
             throw new AuthException("세션이 만료되었습니다. 다시 로그인 해주세요.", HttpStatus.UNAUTHORIZED);
         }
 
-        if (!tokenRepository.isValid(uuid, sessionUser, refreshToken)) {
+        String ip = extractClientIp(servletRequest);
+        String userAgent = servletRequest.getHeader(HttpHeaders.USER_AGENT);
+        if (!tokenRepository.isValid(uuid, sessionUser, refreshToken,userAgent,ip)) {
             throw new AuthException("리프레시 토큰이 유효하지 않습니다.", HttpStatus.UNAUTHORIZED);
         }
 
@@ -129,4 +133,12 @@ public class AuthService {
         }
         return null;
     }
+    private String extractClientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0]; // 다중 프록시일 경우 첫 번째 값이 실제 클라이언트 IP
+        }
+        return request.getRemoteAddr(); // Fallback
+    }
+
 }
