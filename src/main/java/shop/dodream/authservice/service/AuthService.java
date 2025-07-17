@@ -52,7 +52,7 @@ public class AuthService {
         String userAgent = servletRequest.getHeader(HttpHeaders.USER_AGENT);
         String ip = extractClientIp(servletRequest);
 
-        tokenRepository.save(uuid, sessionUser, refreshToken, ip, userAgent);
+        tokenRepository.save(uuid, sessionUser, refreshToken, userAgent, ip);
         userFeignClient.updateLastLogin(user.getUserId());
         return new TokenResponse(accessToken,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),refreshToken);
     }
