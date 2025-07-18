@@ -34,7 +34,6 @@ public class DormantVerificationServiceTest {
     @Captor
     private ArgumentCaptor<DoorayMessageRequest> requestCaptor;
 
-
     private DormantVerificationService service;
 
     @BeforeEach

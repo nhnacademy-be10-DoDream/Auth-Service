@@ -1,5 +1,6 @@
 package shop.dodream.authservice.repository;
 
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ public class TokenRepositoryTest {
     public void setUp() {
         tokenRepository.save(uuid,sessionUser,refreshToken,userAgent,ip);
     }
+
 
     @AfterEach
     void tearDown(){
