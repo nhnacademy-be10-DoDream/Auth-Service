@@ -58,7 +58,7 @@ public class AuthService {
     }
 
     public TokenResponse refresh(String refreshToken,HttpServletRequest servletRequest) {
-        if (refreshToken == null || refreshToken.isBlank()) {
+        if (refreshToken == null) {
             throw new AuthException("리프레시 토큰이 없습니다.", HttpStatus.BAD_REQUEST);
         }
 
@@ -135,7 +135,7 @@ public class AuthService {
     }
     private String extractClientIp(HttpServletRequest request) {
         String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
+        if (forwarded != null) {
             return forwarded.split(",")[0]; // 다중 프록시일 경우 첫 번째 값이 실제 클라이언트 IP
         }
         return request.getRemoteAddr(); // Fallback

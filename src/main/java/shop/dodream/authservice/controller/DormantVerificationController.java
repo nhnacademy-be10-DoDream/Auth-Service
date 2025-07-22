@@ -1,6 +1,7 @@
 package shop.dodream.authservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import shop.dodream.authservice.service.DormantVerificationService;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Auth/Dormant")
 @RequestMapping("/auth/dormant")
 public class DormantVerificationController {
 
