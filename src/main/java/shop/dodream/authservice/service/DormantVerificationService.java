@@ -24,7 +24,7 @@ public class DormantVerificationService {
         DoorayMessageRequest.Attachment attachment = new DoorayMessageRequest.Attachment();
         attachment.setTitle("🔐 인증번호 안내");
         attachment.setText("인증번호는 ["+ code + "] 입니다. \n5분 이내에 입력해주세요.");
-        attachment.setTitleLink("https://dodream.shop/auth/dormant/verify-form?userId=" + userId);
+        attachment.setTitleLink("https://dodream.shop");
         attachment.setBotIconImage("https://static.dooray.com/static_images/dooray-bot.png");
         attachment.setColor("yellow");
 
