@@ -1,6 +1,7 @@
 package shop.dodream.authservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import shop.dodream.authservice.service.PaycoOAuthService;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Auth")
 @RequestMapping("/auth")
 public class AuthController {
 
