@@ -17,6 +17,7 @@ import shop.dodream.authservice.dto.TokenResponse;
 import shop.dodream.authservice.dto.UserResponse;
 import shop.dodream.authservice.dto.payco.*;
 import shop.dodream.authservice.exception.AccountException;
+import shop.dodream.authservice.exception.AuthException;
 import shop.dodream.authservice.jwt.properties.JwtProperties;
 import shop.dodream.authservice.jwt.JwtTokenProvider;
 import shop.dodream.authservice.repository.TokenRepository;
@@ -41,37 +42,37 @@ public class PaycoOAuthService {
     public String buildAuthorizationUrl() {
         return UriComponentsBuilder
                 .fromHttpUrl(paycoProperties.getAuthorizationUri())
-                .queryParam("response_type","code")
-                .queryParam("client_id",paycoProperties.getClientId())
-                .queryParam("redirect_uri",paycoProperties.getRedirectUri())
+                .queryParam("response_type", "code")
+                .queryParam("client_id", paycoProperties.getClientId())
+                .queryParam("redirect_uri", paycoProperties.getRedirectUri())
                 .queryParam("state", UUID.randomUUID().toString())
-                .queryParam("serviceProviderCode","FRIENDS")
-                .queryParam("userLocale","ko_KR")
+                .queryParam("serviceProviderCode", "FRIENDS")
+                .queryParam("userLocale", "ko_KR")
                 .build().toUriString();
     }
 
     public TokenResponse loginWithPayco(String code, String state, HttpServletRequest request) {
-        String accessToken = requestAccessToken(code,state);
+        String accessToken = requestAccessToken(code, state);
         PaycoUserInfo info = requestUserInfo(accessToken);
         UserResponse user = findOrCreateUser(info);
-        if(user.getStatus() == Status.DORMANT){
-            throw new AccountException("휴면 계정입니다. 인증 후 로그인 해주세요.",Status.DORMANT,user.getUserId());
-        }else if(user.getStatus() == Status.WITHDRAWN){
-            throw new AccountException("탈퇴된 계정입니다. 다른 아이디로 로그인 해주세요.",Status.WITHDRAWN,user.getUserId());
+        if (user.getStatus() == Status.DORMANT) {
+            throw new AccountException("휴면 계정입니다. 인증 후 로그인 해주세요.", Status.DORMANT, user.getUserId());
+        } else if (user.getStatus() == Status.WITHDRAWN) {
+            throw new AccountException("탈퇴된 계정입니다. 다른 아이디로 로그인 해주세요.", Status.WITHDRAWN, user.getUserId());
         }
 
         String uuid = UUID.randomUUID().toString();
-        SessionUser sessionUser = new SessionUser(user.getUserId(),user.getRole());
+        SessionUser sessionUser = new SessionUser(user.getUserId(), user.getRole());
         String accessJwt = jwtTokenProvider.createAccessToken(uuid);
         String refreshJwt = jwtTokenProvider.createRefreshToken(uuid);
         String userAgent = request.getHeader(HttpHeaders.USER_AGENT);
         String ip = extractClientIp(request);
-        tokenRepository.save(uuid,sessionUser, refreshJwt,userAgent,ip);
+        tokenRepository.save(uuid, sessionUser, refreshJwt, userAgent, ip);
         userFeignClient.updateLastLogin(user.getUserId());
-        return new TokenResponse(accessJwt,"Bearer",(int)(jwtProperties.getAccessTokenExpiration()/1000),refreshJwt);
+        return new TokenResponse(accessJwt, "Bearer", (int) (jwtProperties.getAccessTokenExpiration() / 1000), refreshJwt);
     }
 
-    private String requestAccessToken(String code, String state){
+    private String requestAccessToken(String code, String state) {
         String url = paycoProperties.getTokenUri();
 
         HttpHeaders headers = new HttpHeaders();
@@ -112,6 +113,12 @@ public class PaycoOAuthService {
         try {
             return userFeignClient.findByUserId(userId);
         } catch (FeignException.NotFound e) {
+            if (info.getEmail() == null
+                    || info.getName() == null
+                    || info.getMobile() == null
+                    || info.getBirthday() == null) {
+                throw new AuthException("페이코에서 필수 정보를 받지 못했습니다. 페이코에서 정보를 확인해주세요.", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
             String password = passwordEncoder.encode(UUID.randomUUID().toString());
             Date birthDate = null;
 
@@ -122,24 +129,36 @@ public class PaycoOAuthService {
                     birthDate = null;
                 }
             }
+            String mobile = normalizePhone(info.getMobile());
 
             PaycoUserRequest request = new PaycoUserRequest(
                     userId,
                     password,
                     info.getEmail(),
                     info.getName(),
-                    info.getMobile(),
+                    mobile,
                     birthDate
             );
 
             return userFeignClient.createPaycoUser(request);
         }
     }
+
     private String extractClientIp(HttpServletRequest request) {
         String forwarded = request.getHeader("X-Forwarded-For");
         if (forwarded != null && !forwarded.isBlank()) {
             return forwarded.split(",")[0];
         }
         return request.getRemoteAddr();
+    }
+
+    private String normalizePhone(String raw) {
+        if (raw != null && raw.startsWith("82") && raw.length() > 2) {
+            String noDash = raw.substring(2);
+            if (noDash.startsWith("10")) {
+                return "0" + noDash;
+            }
+        }
+        return raw != null ? raw.replaceAll("-", "") : null;
     }
 }
